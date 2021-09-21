@@ -1,6 +1,6 @@
 steps:
   - name: gcr.io/cloud-builders/docker
-    id: Build Caddy image
+    id: Build image
     args:
       - build
       - -t
@@ -8,7 +8,7 @@ steps:
       - --no-cache
       - .
   - name: gcr.io/cloud-builders/docker
-    id: Push Caddy image
+    id: Push image
     args: 
       - push
       - $_APP_REPO/$_SERVICE_NAME:$_ENVIRONMENT
