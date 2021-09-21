@@ -1,0 +1,28 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: Build Caddy image
+    args:
+      - build
+      - -t
+      - $_APP_REPO/$_SERVICE_NAME:$_ENVIRONMENT
+      - --no-cache
+      - .
+  - name: gcr.io/cloud-builders/docker
+    id: Push Caddy image
+    args: 
+      - push
+      - $_APP_REPO/$_SERVICE_NAME:$_ENVIRONMENT
+  # Update Cloud Run service
+  # - name: gcr.io/cloud-builders/gcloud
+  #   id: Update Cloud Run service
+  #   entrypoint: gcloud
+  #   args:
+  #     - run
+  #     - services
+  #     - update
+  #     - $_SERVICE_NAME
+  #     - --platform=managed
+  #     - --image=$_APP_REPO/$_SERVICE_NAME:$_ENVIRONMENT
+  #     - --region=$_DEPLOY_REGION
+  #     - --quiet
+  #     - --async
