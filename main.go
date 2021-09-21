@@ -92,7 +92,7 @@ func dbGetCollection(collection string) []byte {
 		}
 		collectionMap = append(collectionMap, doc.Data())
 	}
-	j, _ := json.MarshalIndent(collectionMap, "", "    ")
+	j, _ := json.Marshal(collectionMap)
 	return j
 }
 
