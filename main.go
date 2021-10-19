@@ -122,8 +122,8 @@ func main() {
 		})
 	})
 
-	fmt.Println("Listening for eonnections on port 8080")
-	http.ListenAndServe(":8080", r)
+	fmt.Println("Listening for eonnections on port 80")
+	http.ListenAndServe(":80", r)
 }
 
 func getChars(w http.ResponseWriter, r *http.Request) {
