@@ -30,33 +30,12 @@ type myChar string
 
 type Character struct {
 	Name   string   `firestore:"name,omitempty"`
-	Race   string   `firestore:"race,omitempty"`
+	Game   string   `firestore:"games,omitempty"`
+	Born   string   `firestore:"born,omitempty"`
 	Gender string   `firestore:"gender,omitempty"`
 	Age    int      `firestore:"age,omitempty"`
-	Born   string   `firestore:"born,omitempty"`
+	Race   string   `firestore:"race,omitempty"`
 	Spells []string `firestore:"spells,omitempty"`
-}
-
-func SeedCharacters(ctx context.Context, client *firestore.Client) error {
-	characters := []struct {
-		id string
-		c  Character
-	}{
-		{id: "1", c: Character{Name: "Alis Landale", Race: "Human", Age: 15, Gender: "Female", Born: "AW 327, 5.25", Spells: []string{"Heal", "Bye", "Chat", "Fire", "Rope", "Fly"}}},
-		{id: "2", c: Character{Name: "Myau", Race: "Musk Cat", Gender: "Male"}},
-		{id: "3", c: Character{Name: "Odin", Race: "Human", Gender: "Male", Born: "AW 314, 2.26", Age: 28}},
-		{id: "4", c: Character{Name: "Noah", Race: "Human", Gender: "Male", Born: " AW 315, 3.24", Age: 27}},
-	}
-
-	for _, c := range characters {
-		_, err := client.Collection("PSDB").Doc("ps1").Collection("characters").Doc(c.id).Set(ctx, c.c)
-		// _, err := client.Collection("characters").Doc(c.id).Set(ctx, c.c)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func newFireStoreClient(ctx context.Context) *firestore.Client {
@@ -68,7 +47,7 @@ func newFireStoreClient(ctx context.Context) *firestore.Client {
 }
 
 func dbGetCharacter(id string) (*jsonCharacter, error) {
-	dsnap, err := fs.Collection("PSDB").Doc("ps1").Collection("characters").Doc(id).Get(ctx)
+	dsnap, err := fs.Collection("PSDB").Doc("api").Collection("characters").Doc(id).Get(ctx)
 	// j, err := json.MarshalIndent(dsnap.Data(), "", "    ")
 	if err != nil {
 		return nil, err
@@ -98,13 +77,6 @@ func dbGetCollection(collection string) []byte {
 
 func main() {
 	defer fs.Close()
-
-	// fmt.Println("About to SEED")
-	// err := SeedCharacters(ctx, fs)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println("Done SEEDING")
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
