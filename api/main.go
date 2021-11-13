@@ -26,38 +26,15 @@ type jsonCharacter struct {
 	Spells []string `json:"spells,omitempty"`
 }
 
+type jsonGame struct {
+	Title          string   `json:"title,omitempty"`
+	Title_Japanese string   `json:"title_japanese,omitempty"`
+	Released       string   `json:"released,omitempty"`
+	Characters     []string `json:"characters,omitempty"`
+}
+
 type myChar string
-
-type Character struct {
-	Name   string   `firestore:"name,omitempty"`
-	Race   string   `firestore:"race,omitempty"`
-	Gender string   `firestore:"gender,omitempty"`
-	Age    int      `firestore:"age,omitempty"`
-	Born   string   `firestore:"born,omitempty"`
-	Spells []string `firestore:"spells,omitempty"`
-}
-
-func SeedCharacters(ctx context.Context, client *firestore.Client) error {
-	characters := []struct {
-		id string
-		c  Character
-	}{
-		{id: "1", c: Character{Name: "Alis Landale", Race: "Human", Age: 15, Gender: "Female", Born: "AW 327, 5.25", Spells: []string{"Heal", "Bye", "Chat", "Fire", "Rope", "Fly"}}},
-		{id: "2", c: Character{Name: "Myau", Race: "Musk Cat", Gender: "Male"}},
-		{id: "3", c: Character{Name: "Odin", Race: "Human", Gender: "Male", Born: "AW 314, 2.26", Age: 28}},
-		{id: "4", c: Character{Name: "Noah", Race: "Human", Gender: "Male", Born: " AW 315, 3.24", Age: 27}},
-	}
-
-	for _, c := range characters {
-		_, err := client.Collection("PSDB").Doc("ps1").Collection("characters").Doc(c.id).Set(ctx, c.c)
-		// _, err := client.Collection("characters").Doc(c.id).Set(ctx, c.c)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
+type myGame string
 
 func newFireStoreClient(ctx context.Context) *firestore.Client {
 	client, err := firestore.NewClient(ctx, projectID)
@@ -68,7 +45,7 @@ func newFireStoreClient(ctx context.Context) *firestore.Client {
 }
 
 func dbGetCharacter(id string) (*jsonCharacter, error) {
-	dsnap, err := fs.Collection("PSDB").Doc("ps1").Collection("characters").Doc(id).Get(ctx)
+	dsnap, err := fs.Collection("PSDB").Doc("api").Collection("characters").Doc(id).Get(ctx)
 	// j, err := json.MarshalIndent(dsnap.Data(), "", "    ")
 	if err != nil {
 		return nil, err
@@ -78,8 +55,19 @@ func dbGetCharacter(id string) (*jsonCharacter, error) {
 	return &c, nil
 }
 
+func dbGetGame(id string) (*jsonGame, error) {
+	dsnap, err := fs.Collection("PSDB").Doc("api").Collection("games").Doc(id).Get(ctx)
+	// j, err := json.MarshalIndent(dsnap.Data(), "", "    ")
+	if err != nil {
+		return nil, err
+	}
+	var g jsonGame
+	dsnap.DataTo(&g)
+	return &g, nil
+}
+
 func dbGetCollection(collection string) []byte {
-	iter := fs.Collection("PSDB").Doc("ps1").Collection(collection).Documents(ctx)
+	iter := fs.Collection("PSDB").Doc("api").Collection(collection).Documents(ctx)
 
 	type M map[string]interface{}
 
@@ -92,42 +80,48 @@ func dbGetCollection(collection string) []byte {
 		}
 		collectionMap = append(collectionMap, doc.Data())
 	}
-	j, _ := json.MarshalIndent(collectionMap, "", "    ")
+	j, _ := json.Marshal(collectionMap)
 	return j
 }
 
 func main() {
 	defer fs.Close()
 
-	// fmt.Println("About to SEED")
-	// err := SeedCharacters(ctx, fs)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println("Done SEEDING")
-
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("Welcome to the Phantasy Star Database!"))
+		w.Write([]byte("Welcome to the Phantasy Star API!"))
 	})
 
 	r.Route("/characters", func(r chi.Router) {
-		r.Get("/", getChars)
+		r.Get("/", getCharacters)
 		r.Route("/{characterID}", func(r chi.Router) {
 			r.Use(CharCtx)
 			r.Get("/", getCharacter)
 		})
 	})
 
-	fmt.Println("Listening for eonnections on port 8080")
-	http.ListenAndServe("localhost:8080", r)
+	r.Route("/games", func(r chi.Router) {
+		r.Get("/", getGames)
+		r.Route("/{gameID}", func(r chi.Router) {
+			r.Use(GameCtx)
+			r.Get("/", getGame)
+		})
+	})
+
+	fmt.Println("Listening for eonnections on port 80")
+	http.ListenAndServe(":80", r)
 }
 
-func getChars(w http.ResponseWriter, r *http.Request) {
+func getCharacters(w http.ResponseWriter, r *http.Request) {
 	j := dbGetCollection("characters")
+	w.Write(j)
+}
+
+func getGames(w http.ResponseWriter, r *http.Request) {
+	j := dbGetCollection("games")
 	w.Write(j)
 }
 
@@ -145,6 +139,20 @@ func CharCtx(next http.Handler) http.Handler {
 	})
 }
 
+func GameCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gameID := chi.URLParam(r, "gameID")
+		char, err := dbGetGame(gameID)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		var g myGame
+		ctx := context.WithValue(r.Context(), g, char)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func getCharacter(w http.ResponseWriter, r *http.Request) {
 	var c myChar
 	character, ok := r.Context().Value(c).(*jsonCharacter)
@@ -153,5 +161,16 @@ func getCharacter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	j, _ := json.Marshal(character)
+	w.Write(j)
+}
+
+func getGame(w http.ResponseWriter, r *http.Request) {
+	var g myGame
+	game, ok := r.Context().Value(g).(*jsonGame)
+	if !ok {
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		return
+	}
+	j, _ := json.Marshal(game)
 	w.Write(j)
 }
