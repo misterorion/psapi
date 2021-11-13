@@ -1,9 +1,9 @@
 FROM golang:1.17-alpine as builder
 WORKDIR /app
-COPY go.mod ./
-COPY go.sum ./
+COPY ./api/go.mod ./
+COPY ./api/go.sum ./
 RUN go mod download
-COPY *.go .
+COPY ./api/*.go .
 RUN go build -o ./main
 
 FROM alpine:latest

@@ -5,7 +5,6 @@ title = "PS API Database Seed Data"
 [characters.1]
 age = 15
 born = "AW 327, 5.25"
-gender = "Female"
 game = "https://psapi.dev/api/game/1/"
 name = "Alis Landale"
 race = "Human"
@@ -13,7 +12,6 @@ spells = ["Heal", "Bye", "Chat", "Fire", "Rope", "Fly"]
 
 [characters.2]
 gender = "Male"
-name = "Myau"
 game = "https://psapi.dev/api/game/1/"
 race = "Musk Cat"
 spells = ["Cure", "Exit", "Help", "Terrify", "Trap", "Wall"]
@@ -21,7 +19,6 @@ spells = ["Cure", "Exit", "Help", "Terrify", "Trap", "Wall"]
 [characters.3]
 age = 28
 born = "AW 314, 2.26"
-gender = "Male"
 game = "https://psapi.dev/api/game/1/"
 name = "Odin"
 race = "Human"
@@ -29,7 +26,6 @@ race = "Human"
 [characters.4]
 age = 27
 born = "AW 315, 3.24"
-gender = "Male"
 game = "https://psapi.dev/api/game/1/"
 name = "Noah"
 race = "Human"
@@ -45,13 +41,30 @@ spells = [
   "Wind",
 ]
 
+[characters.5]
+game = "https://psapi.dev/api/game/2/"
+name = "Rolf"
+race = "Human"
+spells = ["Foi", "Res", "Ryuka", "Gifoi"]
+
+[characters.6]
+game = "https://psapi.dev/api/game/2/"
+name = "Nei"
+race = "Numan"
+spells = ["Res", "Anti", "Sak", "Nasak"]
+
+[characters.7]
+game = "https://psapi.dev/api/game/2/"
+name = "Rudo"
+race = "Human"
+
 [games]
 
 [games.1]
 title = "Phantasy Star"
 title_japanese = "ファンタシースター"
-released = "December 20, 1987"
-platforms = ["Sega Master System", "Sega Mega Drive"]
+released = "1987-12-20"
+platforms = ["Sega Master System"]
 characters = [
   "https://psapi.dev/api/character/1/",
   "https://psapi.dev/api/character/2/",
@@ -62,10 +75,9 @@ characters = [
 [games.2]
 title = "Phantasy Star II"
 title_japanese = "ファンタシースターII 還らざる時の終わりに"
-released = "1989"
+released = "1989-03-21"
 platforms = ["Sega Genesis", "Sega Mega Drive"]
 characters = [
-  "https://psapi.dev/api/character/4/",
   "https://psapi.dev/api/character/5/",
   "https://psapi.dev/api/character/6/",
   "https://psapi.dev/api/character/7/",
