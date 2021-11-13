@@ -13,5 +13,5 @@ steps:
     args:
       - -c
       - |
-        gcloud run services update $_SERVICE_NAME --platform=managed \
+        gcloud run services update $_SERVICE --platform=managed \
           --image=$_REPO:$SHORT_SHA --region=$_REGION --quiet --async
