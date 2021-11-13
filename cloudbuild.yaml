@@ -5,7 +5,10 @@ steps:
     args:
       - -c
       - |
-        docker build -t $_REPO:$SHORT_SHA .
+        docker build \
+          --build-arg GO_IMAGE=$_GO_IMAGE \
+          --build-arg ALPINE_IMAGE=$_ALPINE_IMAGE \
+          -t $_REPO:$SHORT_SHA .
         docker push $_REPO:$SHORT_SHA
   - id: Update Cloud Run service
     name: gcr.io/cloud-builders/gcloud
