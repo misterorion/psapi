@@ -1,0 +1,17 @@
+steps:
+  - id: Build Go image
+    name: gcr.io/cloud-builders/docker
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        docker build -f ./api/Dockerfile -t $_REPO:$SHORT_SHA .
+        docker push $_REPO:$SHORT_SHA
+  - id: Update Cloud Run service
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: sh
+    args:
+      - -c
+      - |
+        gcloud run services update $_SERVICE_NAME --platform=managed \
+          --image=$_REPO:$SHORT_SHA --region=$_REGION --quiet --async
