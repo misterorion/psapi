@@ -27,10 +27,10 @@ type jsonCharacter struct {
 }
 
 type jsonGame struct {
-	Title          string   `json:"title,omitempty"`
-	Title_Japanese string   `json:"title_japanese,omitempty"`
-	Released       string   `json:"released,omitempty"`
-	Characters     []string `json:"characters,omitempty"`
+	Title         string   `json:"title,omitempty"`
+	TitleJapanese string   `json:"title_japanese,omitempty"`
+	Released      string   `json:"released,omitempty"`
+	Characters    []string `json:"characters,omitempty"`
 }
 
 type myChar string
@@ -51,7 +51,7 @@ func dbGetCharacter(id string) (*jsonCharacter, error) {
 		return nil, err
 	}
 	var c jsonCharacter
-	dsnap.DataTo(&c)
+	_ = dsnap.DataTo(&c)
 	return &c, nil
 }
 
@@ -62,7 +62,7 @@ func dbGetGame(id string) (*jsonGame, error) {
 		return nil, err
 	}
 	var g jsonGame
-	dsnap.DataTo(&g)
+	_ = dsnap.DataTo(&g)
 	return &g, nil
 }
 
@@ -111,7 +111,7 @@ func main() {
 		})
 	})
 
-	fmt.Println("Listening for eonnections on port 80")
+	fmt.Println("Listening for connections on port 80")
 	http.ListenAndServe(":80", r)
 }
 
