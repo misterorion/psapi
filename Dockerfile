@@ -11,5 +11,5 @@ RUN go build -o ./main
 FROM $ALPINE_IMAGE
 WORKDIR /app
 COPY --from=builder /app/main .
-EXPOSE 80
+EXPOSE 8080
 CMD ["/app/main"]
