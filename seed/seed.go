@@ -2,24 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"cloud.google.com/go/firestore"
 	"github.com/BurntSushi/toml"
+	"google.golang.org/api/iterator"
 )
-
-var ctx = context.Background()
-var fs = newFireStoreClient(ctx)
-var projectID = "mechapower"
-
-func newFireStoreClient(ctx context.Context) *firestore.Client {
-	client, err := firestore.NewClient(ctx, projectID)
-	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
-	}
-	return client
-}
 
 type tomlConfig struct {
 	Characters map[string]Character
@@ -37,46 +25,81 @@ type Character struct {
 }
 
 type Game struct {
-	Title          string   `firestore:"title,omitempty"`
-	Title_Japanese string   `firestore:"title_japanese,omitempty"`
-	Released       string   `firestore:"released,omitempty"`
-	Characters     []string `firestore:"characters,omitempty"`
-}
-
-func SeedData(ctx context.Context, client *firestore.Client) error {
-
-	var config tomlConfig
-
-	if _, err := toml.DecodeFile("seed.toml", &config); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	for id, c := range config.Characters {
-		_, err := client.Collection("PSDB").Doc("api").Collection("characters").Doc(id).Set(ctx, c)
-		if err != nil {
-			return err
-		}
-	}
-
-	for id, g := range config.Games {
-		_, err := client.Collection("PSDB").Doc("api").Collection("games").Doc(id).Set(ctx, g)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	Title         string   `firestore:"title,omitempty"`
+	TitleJapanese string   `firestore:"titleJapanese,omitempty"`
+	Released      string   `firestore:"released,omitempty"`
+	Characters    []string `firestore:"characters,omitempty"`
 }
 
 func main() {
-
-	defer fs.Close()
-
-	fmt.Println("About to SEED")
-	err := SeedData(ctx, fs)
+	ctx := context.Background()
+	client, err := firestore.NewClient(ctx, "mechapower")
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf("Failed to create client: %v", err)
 	}
-	fmt.Println("Done SEEDING")
+	defer client.Close()
+
+	var config tomlConfig
+	_, err = toml.DecodeFile("seed.toml", &config)
+	if err != nil {
+		log.Fatalf("Failed to decode toml: %v", err)
+	}
+
+	log.Println("Cleaning data")
+	err = deleteCollection(ctx, client, client.Collection("PSDB/api/characters"), 10)
+	if err != nil {
+		log.Fatalf("Failed to clean characters: %v", err)
+	}
+
+	err = deleteCollection(ctx, client, client.Collection("PSDB/api/games"), 10)
+	if err != nil {
+		log.Fatalf("Failed to clean games: %v", err)
+	}
+
+	log.Println("Seeding data")
+	for id, c := range config.Characters {
+		_, err := client.Collection("PSDB/api/characters").Doc(id).Set(ctx, c)
+		if err != nil {
+			log.Fatalf("Failed to seed characters: %v", err)
+		}
+	}
+	for id, g := range config.Games {
+		_, err := client.Collection("PSDB/api/games").Doc(id).Set(ctx, g)
+		if err != nil {
+			log.Fatalf("Failed to seed games: %v", err)
+		}
+	}
+	log.Println("Done!")
+}
+
+func deleteCollection(ctx context.Context, client *firestore.Client,
+	ref *firestore.CollectionRef, batchSize int) error {
+
+	for {
+		iter := ref.Limit(batchSize).Documents(ctx)
+		numDeleted := 0
+
+		batch := client.Batch()
+		for {
+			doc, err := iter.Next()
+			if err == iterator.Done {
+				break
+			}
+			if err != nil {
+				return err
+			}
+
+			batch.Delete(doc.Ref)
+			numDeleted++
+		}
+
+		if numDeleted == 0 {
+			return nil
+		}
+
+		_, err := batch.Commit(ctx)
+		if err != nil {
+			return err
+		}
+	}
 }

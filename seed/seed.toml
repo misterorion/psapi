@@ -54,15 +54,17 @@ race = "Numan"
 spells = ["Res", "Anti", "Sak", "Nasak"]
 
 [characters.7]
-game = "https://psapi.dev/api/game/2/"
-name = "Rudo"
+born = "AW 2268, 10.1"
+game = "https://psapi.dev/api/game/4/"
+name = "Chaz Ashley"
 race = "Human"
+spells = ["Res", "Tsu", "Hinas", "Ryuka", "Anti", "Zan"]
 
 [games]
 
 [games.1]
 title = "Phantasy Star"
-title_japanese = "ファンタシースター"
+titleJapanese = "ファンタシースター"
 released = "1987-12-20"
 platforms = ["Sega Master System"]
 characters = [
@@ -74,11 +76,26 @@ characters = [
 
 [games.2]
 title = "Phantasy Star II"
-title_japanese = "ファンタシースターII 還らざる時の終わりに"
+titleJapanese = "ファンタシースターII 還らざる時の終わりに"
 released = "1989-03-21"
 platforms = ["Sega Genesis", "Sega Mega Drive"]
 characters = [
   "https://psapi.dev/api/character/5/",
   "https://psapi.dev/api/character/6/",
   "https://psapi.dev/api/character/7/",
+]
+
+[games.3]
+title = "Phantasy Star III: Generations of Doom"
+titleJapanese = "時の継承者 ファンタシースターIII"
+released = "1990-04-21"
+platforms = ["Sega Genesis", "Sega Mega Drive"]
+
+[games.4]
+title = "Phantasy Star IV: The End of the Millennium"
+titleJapanese = "ファンタシースター　千年紀の終りに"
+released = "1993-12-17"
+platforms = ["Sega Genesis", "Sega Mega Drive"]
+characters = [
+  "https://psapi.dev/api/character/7/"
 ]
