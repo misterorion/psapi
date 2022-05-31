@@ -16,7 +16,7 @@ type tomlConfig struct {
 
 type Character struct {
 	Name   string   `firestore:"name,omitempty"`
-	Game   string   `firestore:"games,omitempty"`
+	Game   string   `firestore:"game,omitempty"`
 	Born   string   `firestore:"born,omitempty"`
 	Gender string   `firestore:"gender,omitempty"`
 	Age    int      `firestore:"age,omitempty"`
