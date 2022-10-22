@@ -13,6 +13,8 @@ import (
 	"google.golang.org/api/iterator"
 )
 
+// TODO add JWT authentication
+
 var ctx = context.Background()
 var fs = newFireStoreClient(ctx)
 var projectID = "mechapower"
