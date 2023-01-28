@@ -14,7 +14,7 @@ steps:
         "update",
         "$_SERVICE",
         "--platform=managed",
-        "--image=$_REPO:$SHORT_SHA",
+        "--image=$_APP_IMAGE:$SHORT_SHA",
         "--region=$_REGION",
         "--quiet",
         "--async",
