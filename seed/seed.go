@@ -37,7 +37,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
 	}
-	defer client.Close()
+	defer func(client *firestore.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Fatalf("Failed to close connection: %v", err)
+		}
+	}(client)
 
 	var config tomlConfig
 	_, err = toml.DecodeFile("seed.toml", &config)
@@ -46,6 +51,7 @@ func main() {
 	}
 
 	log.Println("Cleaning data")
+
 	err = deleteCollection(ctx, client, client.Collection("PSDB/api/characters"), 10)
 	if err != nil {
 		log.Fatalf("Failed to clean characters: %v", err)
@@ -72,14 +78,13 @@ func main() {
 	log.Println("Done!")
 }
 
-func deleteCollection(ctx context.Context, client *firestore.Client,
-	ref *firestore.CollectionRef, batchSize int) error {
+func deleteCollection(ctx context.Context, client *firestore.Client, ref *firestore.CollectionRef, batchSize int) error {
 
 	for {
 		iter := ref.Limit(batchSize).Documents(ctx)
 		numDeleted := 0
 
-		batch := client.Batch()
+		writer := client.BulkWriter(ctx)
 		for {
 			doc, err := iter.Next()
 			if err == iterator.Done {
@@ -89,7 +94,10 @@ func deleteCollection(ctx context.Context, client *firestore.Client,
 				return err
 			}
 
-			batch.Delete(doc.Ref)
+			_, err = writer.Delete(doc.Ref)
+			if err != nil {
+				return err
+			}
 			numDeleted++
 		}
 
@@ -97,9 +105,7 @@ func deleteCollection(ctx context.Context, client *firestore.Client,
 			return nil
 		}
 
-		_, err := batch.Commit(ctx)
-		if err != nil {
-			return err
-		}
+		writer.Flush()
+		return nil
 	}
 }
